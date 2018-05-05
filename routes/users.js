@@ -11,49 +11,33 @@ var JwtStrategy = passportJWT.Strategy;
 const User = require('../models/userModel.js');
 
 router.post('/register', (req, res, next) => {
-  console.log("req body",req.body);
   let firstName = req.body.firstName;
   let lastName = req.body.lastName;
   let userName = req.body.userName;
   let email = req.body.email;
   let password = req.body.password;
 
-  req.checkBody('firstName', 'İsim zorunlu alandır.').notEmpty();
-  req.checkBody('lastName', 'Soyisim zorunlu alandır.').notEmpty();
-  req.checkBody('email', 'Email zorunlu alandır.').notEmpty();
-  req.checkBody('email', 'Email geçerli değil.').isEmail();
-  req.checkBody('userName', 'Kullanıcı adı zorunlu alandır.').notEmpty();
-  req.checkBody('password', 'Şifre zorunlu alandır.').notEmpty();
+  let newUser = new User({
+    firstName,
+    lastName,
+    userName,
+    email,
+    password
+  });
 
-  let errors = req.validationErrors();
-
-  if (errors) {
-    console.log("error");
-    res.status(400).json({ errors });
-  } else {
-    let newUser = new User({
-      firstName,
-      lastName,
-      userName,
-      email,
-      password
-    });
-
-
-    User.registerUser(newUser, (err, user) => {
-      if (err) {
-        switch (err.code) {
-          case 11000:
-            res.status(400).json({ errors: 'Kullanıcı adı veya email zaten kayıtlı!',err });
-            break;
-          default:
-            res.status(500).json({ errors: 'Saptanamayan bir problem meydana geldi!' });
-        }
-      } else {
-        res.status(200).json({ ok: true });
+  User.registerUser(newUser, (err, user) => {
+    if (err) {
+      switch (err.code) {
+        case 11000:
+          res.status(400).json({ errors: 'Kullanıcı adı veya email zaten kayıtlı!', err });
+          break;
+        default:
+          res.status(500).json({ errors: 'Saptanamayan bir problem meydana geldi!' });
       }
-    })
-  }
+    } else {
+      res.status(200).json({ ok: true });
+    }
+  })
 });
 
 // Login post
