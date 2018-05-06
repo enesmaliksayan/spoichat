@@ -14,7 +14,7 @@ const _ = require('lodash');
 const http = require('http');
 
 
-const index = require('./routes/index');
+const movie = require('./routes/movie');
 const users = require('./routes/users');
 
 const app = express();
@@ -37,7 +37,7 @@ app.use(fileUpload());
 
 // Express Session
 app.use(session({
-  secret: 'sanaltahtaEnesSafak',
+  secret: 'spoichatEnesMalikSayan',
   saveUninitialized: false,
   resave: true,
   cookie: { maxAge: 60000 * 48 }
@@ -48,9 +48,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-app.use('/', index);
 app.use('/user', users);
-
+app.use('/', passport.authenticate('jwt', { session: false }), movie);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   var err = new Error('Not Found');

@@ -29,10 +29,10 @@ router.post('/register', (req, res, next) => {
     if (err) {
       switch (err.code) {
         case 11000:
-          res.status(400).json({ errors: 'Kullanıcı adı veya email zaten kayıtlı!', err });
+          res.status(400).json({ ok: false, errors: 'Kullanıcı adı veya email zaten kayıtlı!', err });
           break;
         default:
-          res.status(500).json({ errors: 'Saptanamayan bir problem meydana geldi!' });
+          res.status(500).json({ ok: false, errors: 'Saptanamayan bir problem meydana geldi!' });
       }
     } else {
       res.status(200).json({ ok: true });
@@ -50,35 +50,37 @@ router.post('/login', (req, res, next) => {
     if (!user) {
       return res.status(400).json({ ok: false, message: 'Kullanıcı bulunamadı' });
     }
-    User.comparePassword(password, user.password, (err, isMatch) => {
-      if (err) throw err;
-      if (isMatch) {
-        let token = jwt.sign({ user }, 'sanaltahtaEnesSafak', {
-          expiresIn: 604800 // 1 week
-        });
+    else {
+      User.comparePassword(password, user.password, (err, isMatch) => {
+        if (err) throw err;
+        if (isMatch) {
+          let token = jwt.sign({ user }, 'spoichatEnesMalikSayan', {
+            expiresIn: 604800 // 1 week
+          });
 
-        res.status(200).json({
-          ok: true,
-          token: 'JWT ' + token,
-          user: {
-            id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            isAdmin: user.isAdmin
-          }
-        });
-      } else {
-        return res.status(400).json({ ok: false, message: 'Yanlış Şifre' })
-      }
-    });
+          res.status(200).json({
+            ok: true,
+            token: 'JWT ' + token,
+            user: {
+              id: user._id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              userName: user.userName
+            }
+          });
+        } else {
+          return res.status(400).json({ ok: false, message: 'Yanlış Şifre' })
+        }
+      });
+    }
   });
 });
 
 // Local Strategy
 var jwtOptions = {}
 jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme('jwt');
-jwtOptions.secretOrKey = 'sanaltahtaEnesSafak';
+jwtOptions.secretOrKey = 'spoichatEnesMalikSayan';
 
 passport.use(new JwtStrategy(jwtOptions, function (jwt_payload, done) {
   User.getUserById(jwt_payload.user._id, (err, user) => {
