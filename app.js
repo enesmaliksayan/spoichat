@@ -17,16 +17,19 @@ const http = require('http');
 const movie = require('./routes/movie');
 const users = require('./routes/users');
 
-const app = express();
-const server = http.createServer(app);
+var app = require('express')();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
 
-const socketIO = require('socket.io');
-const io = socketIO(server);
+server.listen(3000);
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
+
+app.use(cors({ credentials: true, origin: true }));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -38,8 +41,6 @@ app.use(fileUpload());
 // Express Session
 app.use(session({
   secret: 'spoichatEnesMalikSayan',
-  saveUninitialized: false,
-  resave: true,
   cookie: { maxAge: 60000 * 48 }
 }));
 
@@ -47,25 +48,41 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 app.use('/user', users);
-app.use('/', passport.authenticate('jwt', { session: false }), movie);
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+app.use('/movie', passport.authenticate('jwt'), movie);
+
+
+
+const Movie = require('./models/movieModel');
+
+
+io.on('connection', function (socket) {
+  console.log("connected");
+
+  socket.on('newMovie', function (movie) {
+    socket.emit('newMovie', {
+      movie
+    });
+  });
+
+  socket.on('joinRoom', (id) => {
+    console.log(id);
+    socket.join(id);
+  })
+
+  socket.on('leaveRoom', (data) => {
+    socket.leave(data);
+  })
+
+  socket.on('addMessageToMovie', function (id, data) {
+    console.log(id);
+    Movie.addMessageToMovie(id, data, (err, message) => {
+      console.log(data);
+      io.to(id).emit('newMessage', { data });
+    })
+  });
+
 });
 
-// error handler
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
 
 module.exports = app;

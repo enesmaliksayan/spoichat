@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+var ObjectId = require('mongodb').ObjectID;
+
 
 mongoose.connect('mongodb://spoichat:spoichat@ds021046.mlab.com:21046/spoichat');
 const bcrypt = require('bcrypt');
@@ -6,11 +8,10 @@ const bcrypt = require('bcrypt');
 const MovieSchema = mongoose.Schema({
     movieName: { type: String, required: true },
     description: { type: String, required: true },
-    releaseDate: { type: Date, default: Date.now() },
     photo: { type: String, default: 'public/images/nophoto.jpg' },
     messages: [{
-        senderName: { type: String, default: 'Anonymous' },
-        text: { type: String }
+        sender: { type: String, default: 'Anonymous' },
+        message: { type: String }
     }]
 });
 
@@ -21,12 +22,12 @@ module.exports.getMovies = (callback) => {
 }
 
 module.exports.getMovieById = (id, callback) => {
-    let oId = mongoose.Types.ObjectId(id);
+    let oId = ObjectId(id);
     Movie.findById(oId, callback);
 }
 
 module.exports.getMovieByQuery = (query, callback) => {
-    Movie.find({ name: { $in: query } }).sort({ createdAt: -1 }).exec(callback);
+    Movie.find({ movieName: new RegExp(query, "igm") }).sort({ createdAt: -1 }).exec(callback);
 }
 
 module.exports.addMovie = (newMovie, callback) => {
@@ -35,5 +36,6 @@ module.exports.addMovie = (newMovie, callback) => {
 }
 
 module.exports.addMessageToMovie = (id, message, callback) => {
-    Movie.findByIdAndUpdate(id, { $push: { messages: message } }, { 'new': true }, callback);
+    let oId = ObjectId(id);
+    Movie.findByIdAndUpdate(oId, { $push: { messages: message } }, { 'new': true }, callback);
 }

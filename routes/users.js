@@ -29,7 +29,7 @@ router.post('/register', (req, res, next) => {
     if (err) {
       switch (err.code) {
         case 11000:
-          res.status(400).json({ ok: false, errors: 'Kullanıcı adı veya email zaten kayıtlı!', err });
+          res.json({ ok: false, errors: 'Kullanıcı adı veya email zaten kayıtlı!', err });
           break;
         default:
           res.status(500).json({ ok: false, errors: 'Saptanamayan bir problem meydana geldi!' });
@@ -45,10 +45,12 @@ router.post('/login', (req, res, next) => {
   let email = req.body.email;
   let password = req.body.password;
 
+  console.log(req.body);
+
   User.getUserByEmail(email, (err, user) => {
     if (err) throw err;
     if (!user) {
-      return res.status(400).json({ ok: false, message: 'Kullanıcı bulunamadı' });
+      return res.json({ ok: false, message: 'Kullanıcı bulunamadı' });
     }
     else {
       User.comparePassword(password, user.password, (err, isMatch) => {
@@ -70,7 +72,7 @@ router.post('/login', (req, res, next) => {
             }
           });
         } else {
-          return res.status(400).json({ ok: false, message: 'Yanlış Şifre' })
+          return res.json({ ok: false, message: 'Yanlış Şifre' })
         }
       });
     }

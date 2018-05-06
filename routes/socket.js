@@ -3,11 +3,8 @@ const Movie = require('../models/movieModel');
 module.exports = function (io) {
 
     io.on('connection', function (socket) {
-
-        Movie.getMovies((err, movies) => {
-            if (!err) socket.emit('newConnect', movies);
-        })
-
+        console.log("connected");
+        
         socket.on('newMovie', function (movie) {
             socket.emit('newMovie', {
                 movie
@@ -15,6 +12,7 @@ module.exports = function (io) {
         });
 
         socket.on('joinRoom', (data) => {
+            console.log("joined");
             socket.join(data.id);
         })
 
