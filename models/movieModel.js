@@ -21,7 +21,8 @@ module.exports.getMovies = (callback) => {
 }
 
 module.exports.getMovieById = (id, callback) => {
-    Movie.findById(id, callback);
+    let oId = mongoose.Types.ObjectId(id);
+    Movie.findById(oId, callback);
 }
 
 module.exports.getMovieByQuery = (query, callback) => {
@@ -29,8 +30,8 @@ module.exports.getMovieByQuery = (query, callback) => {
 }
 
 module.exports.addMovie = (newMovie, callback) => {
-    newMovie = new Movie();
-    newMovie.save(callback);
+    n = new Movie(newMovie);
+    n.save(callback);
 }
 
 module.exports.addMessageToMovie = (id, message, callback) => {
